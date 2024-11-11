@@ -48,14 +48,15 @@ public class Post {
     @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
     private List<Comment> comments;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "posts_users_likes",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> usersWhoLikedPost;
-
-
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "post_tags",

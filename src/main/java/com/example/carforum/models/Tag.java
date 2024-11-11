@@ -22,6 +22,8 @@ public class Tag {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "is_active")
+    private Boolean isActive;
 
     @ManyToMany(mappedBy = "tagsOfThePost",fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private Set<Post> posts;

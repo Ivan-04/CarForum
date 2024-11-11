@@ -4,18 +4,11 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Data
-@NoArgsConstructor
-@Table(name = "roles")
-public class Role {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
+public enum Role {
 
-    @Column(name = "name")
-    private String name;
+    USER,
+    MODERATOR,
+    ADMIN
 
 }
