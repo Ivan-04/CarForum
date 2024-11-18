@@ -1,8 +1,8 @@
 package com.example.carforum.services;
 
-import com.example.carforum.controllers.AuthenticationRequest;
-import com.example.carforum.controllers.AuthenticationResponse;
-import com.example.carforum.controllers.RegisterRequest;
+import com.example.carforum.controllers.authentication.AuthenticationRequest;
+import com.example.carforum.controllers.authentication.AuthenticationResponse;
+import com.example.carforum.controllers.authentication.RegisterRequest;
 import com.example.carforum.models.User;
 import com.example.carforum.models.dtos.UserOutput;
 import com.example.carforum.models.dtos.UserUpdate;
@@ -27,4 +27,6 @@ public interface UserService {
     public AuthenticationResponse authenticate(AuthenticationRequest request);
 
     UserOutput edit(String currentUsername, String usernameWhoseUserEdit, UserUpdate userUpdate);
+
+    void deactivateUser(int userId, String currentUsername);
 }

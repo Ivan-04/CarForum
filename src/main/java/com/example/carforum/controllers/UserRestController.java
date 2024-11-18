@@ -1,18 +1,13 @@
 package com.example.carforum.controllers;
 
 import com.example.carforum.config.JwtService;
-import com.example.carforum.models.User;
 import com.example.carforum.models.dtos.UserOutput;
 import com.example.carforum.models.dtos.UserUpdate;
 import com.example.carforum.services.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+public class UserRestController {
 
     private final UserService userService;
     private final JwtService jwtService;
@@ -50,6 +45,13 @@ public class UserController {
     public ResponseEntity<UserOutput> editUser(@Valid @PathVariable String username, @RequestBody UserUpdate userUpdate) {
         String loggedUserUsername = jwtService.getCurrentUsername();
         return ResponseEntity.ok(userService.edit(loggedUserUsername, username, userUpdate));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deactivateUser(@Valid @PathVariable int id) {
+        String loggedUserUsername = jwtService.getCurrentUsername();
+        userService.deactivateUser(id, loggedUserUsername);
+        return ResponseEntity.ok("User deactivated successfully!");
     }
 
 

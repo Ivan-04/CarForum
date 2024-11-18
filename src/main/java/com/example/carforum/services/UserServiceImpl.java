@@ -1,9 +1,9 @@
 package com.example.carforum.services;
 
 import com.example.carforum.config.JwtService;
-import com.example.carforum.controllers.AuthenticationRequest;
-import com.example.carforum.controllers.AuthenticationResponse;
-import com.example.carforum.controllers.RegisterRequest;
+import com.example.carforum.controllers.authentication.AuthenticationRequest;
+import com.example.carforum.controllers.authentication.AuthenticationResponse;
+import com.example.carforum.controllers.authentication.RegisterRequest;
 import com.example.carforum.exceptions.EntityNotFoundException;
 import com.example.carforum.exceptions.UnauthorizedOperationException;
 import com.example.carforum.models.Role;
@@ -142,5 +142,19 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return conversionService.convert(user, UserOutput.class);
+    }
+
+    @Override
+    public void deactivateUser(int userId, String currentUsername) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("User", "username", currentUsername)
+        );
+
+        if(!jwtService.isUserAllowedToEdit(currentUsername, user.getUsername())){
+            throw new UnauthorizedOperationException("You can not delete other user!");
+        }
+
+        user.setIsActive(false);
+        userRepository.save(user);
     }
 }

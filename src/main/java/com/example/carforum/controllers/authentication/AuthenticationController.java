@@ -1,4 +1,4 @@
-package com.example.carforum.controllers;
+package com.example.carforum.controllers.authentication;
 
 import com.example.carforum.services.UserService;
 import lombok.RequiredArgsConstructor;
