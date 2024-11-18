@@ -4,24 +4,27 @@ import com.example.carforum.config.JwtService;
 import com.example.carforum.controllers.AuthenticationRequest;
 import com.example.carforum.controllers.AuthenticationResponse;
 import com.example.carforum.controllers.RegisterRequest;
-import com.example.carforum.exceptions.DuplicateEntityException;
 import com.example.carforum.exceptions.EntityNotFoundException;
+import com.example.carforum.exceptions.UnauthorizedOperationException;
 import com.example.carforum.models.Role;
 import com.example.carforum.models.User;
+import com.example.carforum.models.dtos.UserOutput;
+import com.example.carforum.models.dtos.UserUpdate;
 import com.example.carforum.repositories.UserRepository;
-import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -31,6 +34,16 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final ConversionService conversionService;
+
+
+    @Override
+    public List<UserOutput> getAll() {
+        List<User> users = userRepository.findAllByIsActiveTrue();
+        return users.stream().map(user -> conversionService.convert(user, UserOutput.class)).collect(Collectors.toList());
+
+    }
+
 
     @Override
     public Page<User> getUsersWithFilters(String username, String firstName, String email, int page, int size, String sortBy, String sortDirection) {
@@ -45,37 +58,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getById(int id){
-        return userRepository.findByIdAndIsActiveTrue(id);
+    public UserOutput getById(int id){
+        User user = userRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("User", id));
+        return conversionService.convert(user, UserOutput.class);
     }
 
     @Override
-    public User getByUsername(String username) {
-        return userRepository.findByUsernameAndIsActiveTrue(username);
-    }
-
-    @PermitAll
-    @Override
-    public User getByEmail(String email) {
-        return userRepository.findByEmailAndIsActiveTrue(email);
+    public UserOutput getByUsername(String username) {
+        User user = userRepository.findByUsernameAndIsActiveTrue(username)
+                .orElseThrow(() -> new EntityNotFoundException("User", "username", username));
+        return conversionService.convert(user, UserOutput.class);
     }
 
     @Override
-    public User createUser(User user) {
-        boolean duplicate = true;
-        try {
-            userRepository.findByUsernameAndIsActiveTrue(user.getUsername());
-        }catch (EntityNotFoundException e){
-            duplicate = false;
-        }
-
-        if(duplicate){
-            throw new DuplicateEntityException("User", "name", user.getUsername());
-        }
-
-        //user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+    public UserOutput getByEmail(String email) {
+        User user = userRepository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new EntityNotFoundException("User", "email", email));
+        return conversionService.convert(user, UserOutput.class);
     }
+
 
     @Override
     public AuthenticationResponse register(RegisterRequest registerRequest) {
@@ -106,12 +108,39 @@ public class UserServiceImpl implements UserService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
-        var user = userRepository.findByUsernameAndIsActiveTrue(request.getUsername());
+        var user = userRepository.findByUsernameAndIsActiveTrue(request.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("User", "username", request.getUsername()));
 
         var jwtToken = jwtService.generateToken(user);
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    @Override
+    public UserOutput edit(String currentUsername, String usernameWhoseUserEdit,  UserUpdate userUpdate) {
+
+        if(!jwtService.isUserAllowedToEdit(currentUsername, usernameWhoseUserEdit)){
+            throw new UnauthorizedOperationException("You can not edit this User!");
+        }
+
+        User user = userRepository.findByUsernameAndIsActiveTrue(currentUsername).orElseThrow(
+                () -> new EntityNotFoundException("User", "username", currentUsername)
+        );
+
+
+        if (!passwordEncoder.matches(userUpdate.getPassword(), user.getPassword())) {
+            String hashedPassword = passwordEncoder.encode(userUpdate.getPassword());
+            user.setPassword(hashedPassword);
+        }
+
+        user.setFirstName(userUpdate.getFirstName());
+        user.setLastName(userUpdate.getLastName());
+        user.setEmail(userUpdate.getEmail());
+
+        userRepository.save(user);
+
+        return conversionService.convert(user, UserOutput.class);
     }
 }

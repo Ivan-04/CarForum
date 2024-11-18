@@ -4,21 +4,27 @@ import com.example.carforum.controllers.AuthenticationRequest;
 import com.example.carforum.controllers.AuthenticationResponse;
 import com.example.carforum.controllers.RegisterRequest;
 import com.example.carforum.models.User;
+import com.example.carforum.models.dtos.UserOutput;
+import com.example.carforum.models.dtos.UserUpdate;
 import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public interface UserService {
 
+    List<UserOutput> getAll();
+
     Page<User> getUsersWithFilters(String username, String firstName, String email, int page, int size, String sortBy, String sortDirection);
 
-    User getById(int id);
+    UserOutput getById(int id);
 
-    Object getByUsername(String username);
+    UserOutput getByUsername(String username);
 
-    User getByEmail(String email);
-
-    User createUser(User user);
+    UserOutput getByEmail(String email);
 
     public AuthenticationResponse register(RegisterRequest registerRequest);
 
     public AuthenticationResponse authenticate(AuthenticationRequest request);
+
+    UserOutput edit(String currentUsername, String usernameWhoseUserEdit, UserUpdate userUpdate);
 }

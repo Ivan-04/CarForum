@@ -1,7 +1,7 @@
 package com.example.carforum.repositories;
 
 import com.example.carforum.models.User;
-import org.apache.el.stream.Optional;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,11 +29,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     List<User> findAllByIsActiveTrue();
 
-    User findByIdAndIsActiveTrue(int id);
+    Optional<User> findByIdAndIsActiveTrue(int id);
 
-    User findByUsernameAndIsActiveTrue(String username);
+    Optional<User> findByUsernameAndIsActiveTrue(String username);
 
-    User findByEmailAndIsActiveTrue(String email);
+    Optional<User> findByEmailAndIsActiveTrue(String email);
+
 
 
 }

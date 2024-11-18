@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.4'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.flywaydb.flyway' version '10.21.0'
 }
 
 group = 'com.example'
@@ -39,8 +40,18 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // изберете библиотека за JSON (в случая Jackson)
+    implementation 'org.flywaydb:flyway-core:10.21.0'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+flyway {
+    url = 'jdbc:mariadb://localhost:3306/carforum'
+    user = 'root'
+    password = 'root'
+    schemas = ['carforum']
+    baselineOnMigrate = true
 }
