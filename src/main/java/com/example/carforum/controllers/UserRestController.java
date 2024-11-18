@@ -7,8 +7,10 @@ import com.example.carforum.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -54,5 +56,17 @@ public class UserRestController {
         return ResponseEntity.ok("User deactivated successfully!");
     }
 
+    @PutMapping("/{userId}/moderator")
+    public ResponseEntity<String> updateUserToModerator(@PathVariable int userId) {
+            String loggedUserUsername = jwtService.getCurrentUsername();
+            userService.userToBeModerator(loggedUserUsername, userId);
+            return new ResponseEntity<>("Congratulations! This user is already a moderator!", HttpStatus.OK);
+    }
 
+    @PutMapping("/{userId}/moderator/user")
+    public ResponseEntity<String> updateModeratorToUser(@PathVariable int userId) {
+        String loggedUserUsername = jwtService.getCurrentUsername();
+        userService.moderatorToBeUser(loggedUserUsername, userId);
+        return new ResponseEntity<>("Congratulations! This moderator is already a user!", HttpStatus.OK);
+    }
 }

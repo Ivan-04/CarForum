@@ -157,4 +157,54 @@ public class UserServiceImpl implements UserService {
         user.setIsActive(false);
         userRepository.save(user);
     }
+
+    @Override
+    public void userToBeModerator(String loggedUserUsername, int userToModeratorId){
+
+        User loggedUser = userRepository.findByUsernameAndIsActiveTrue(loggedUserUsername)
+                        .orElseThrow(() -> new EntityNotFoundException("User", "username", loggedUserUsername));
+
+        User userToBeModerator = userRepository.findById(userToModeratorId)
+                        .orElseThrow(() -> new EntityNotFoundException("User", userToModeratorId));
+
+
+        if(!loggedUser.getRole().equals(Role.ADMIN)){
+            throw new UnauthorizedOperationException("You can not moderate this User!");
+        }
+
+        if(userToBeModerator.getRole().equals(Role.USER)){
+            userToBeModerator.setRole(Role.MODERATOR);
+            userRepository.save(userToBeModerator);
+        }else if(userToBeModerator.getRole().equals(Role.ADMIN)){
+            throw new UnauthorizedOperationException("You can not moderate admins!");
+        }else if(userToBeModerator.getRole().equals(Role.MODERATOR)){
+            throw new UnauthorizedOperationException("This user is already moderator!");
+        }
+
+    }
+
+    @Override
+    public void moderatorToBeUser(String loggedUserUsername, int moderatorToUserId){
+
+        User loggedUser = userRepository.findByUsernameAndIsActiveTrue(loggedUserUsername)
+                .orElseThrow(() -> new EntityNotFoundException("User", "username", loggedUserUsername));
+
+        User moderatorToBeUser = userRepository.findById(moderatorToUserId)
+                .orElseThrow(() -> new EntityNotFoundException("User", moderatorToUserId));
+
+
+        if(!loggedUser.getRole().equals(Role.ADMIN)){
+            throw new UnauthorizedOperationException("You can not moderate this User!");
+        }
+
+        if(moderatorToBeUser.getRole().equals(Role.MODERATOR)){
+            moderatorToBeUser.setRole(Role.USER);
+            userRepository.save(moderatorToBeUser);
+        }else if(moderatorToBeUser.getRole().equals(Role.ADMIN)){
+            throw new UnauthorizedOperationException("You can not change the role of other admins!");
+        }else if(moderatorToBeUser.getRole().equals(Role.USER)){
+            throw new UnauthorizedOperationException("This user is already user!");
+        }
+
+    }
 }

@@ -29,4 +29,8 @@ public interface UserService {
     UserOutput edit(String currentUsername, String usernameWhoseUserEdit, UserUpdate userUpdate);
 
     void deactivateUser(int userId, String currentUsername);
+
+    void userToBeModerator(String loggedUserUsername, int userToModeratorId);
+
+    void moderatorToBeUser(String loggedUserUsername, int moderatorToUserId);
 }
