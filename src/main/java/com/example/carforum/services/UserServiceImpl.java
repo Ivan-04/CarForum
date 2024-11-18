@@ -146,12 +146,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deactivateUser(int userId, String currentUsername) {
-        User user = userRepository.findById(userId).orElseThrow(
+        User user = userRepository.findByIdAndIsActiveTrue(userId).orElseThrow(
                 () -> new EntityNotFoundException("User", "username", currentUsername)
         );
 
-        if(!jwtService.isUserAllowedToEdit(currentUsername, user.getUsername())){
-            throw new UnauthorizedOperationException("You can not delete other user!");
+        User currUser = userRepository.findByUsernameAndIsActiveTrue(currentUsername)
+                .orElseThrow(() -> new EntityNotFoundException("User", "username", currentUsername));
+
+        if(!jwtService.isUserAllowedToEdit(currentUsername, user.getUsername()) && !currUser.getRole().equals(Role.ADMIN)){
+            throw new UnauthorizedOperationException("You can not delete other user if you are not admin!");
         }
 
         user.setIsActive(false);
@@ -164,7 +167,7 @@ public class UserServiceImpl implements UserService {
         User loggedUser = userRepository.findByUsernameAndIsActiveTrue(loggedUserUsername)
                         .orElseThrow(() -> new EntityNotFoundException("User", "username", loggedUserUsername));
 
-        User userToBeModerator = userRepository.findById(userToModeratorId)
+        User userToBeModerator = userRepository.findByIdAndIsActiveTrue(userToModeratorId)
                         .orElseThrow(() -> new EntityNotFoundException("User", userToModeratorId));
 
 
@@ -189,7 +192,7 @@ public class UserServiceImpl implements UserService {
         User loggedUser = userRepository.findByUsernameAndIsActiveTrue(loggedUserUsername)
                 .orElseThrow(() -> new EntityNotFoundException("User", "username", loggedUserUsername));
 
-        User moderatorToBeUser = userRepository.findById(moderatorToUserId)
+        User moderatorToBeUser = userRepository.findByIdAndIsActiveTrue(moderatorToUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User", moderatorToUserId));
 
 
@@ -205,6 +208,76 @@ public class UserServiceImpl implements UserService {
         }else if(moderatorToBeUser.getRole().equals(Role.USER)){
             throw new UnauthorizedOperationException("This user is already user!");
         }
+    }
 
+    @Override
+    public void blockUser(String loggedUsername, int id){
+
+        User loggedUser = userRepository.findByUsernameAndIsActiveTrue(loggedUsername)
+                .orElseThrow(() -> new EntityNotFoundException("User", "username", loggedUsername));
+
+
+        User userToBlock = userRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("User", id));
+
+
+        if(!loggedUser.getRole().equals(Role.ADMIN) && !loggedUser.getRole().equals(Role.MODERATOR)){
+            throw new UnauthorizedOperationException("You have not permission to block users!");
+        }
+
+        if(loggedUser.getRole().equals(Role.ADMIN) && userToBlock.getRole().equals(Role.ADMIN)){
+            throw new UnauthorizedOperationException("Admin can not block other admins!");
+        }
+
+        if(loggedUser.getRole().equals(Role.MODERATOR) && userToBlock.getRole().equals(Role.ADMIN)){
+            throw new UnauthorizedOperationException("Moderator can not block admins!");
+        }
+
+        if (loggedUser.getRole().equals(Role.MODERATOR) && userToBlock.getRole().equals(Role.MODERATOR)){
+            throw new UnauthorizedOperationException("Moderator can not block other moderators!");
+        }
+
+        if(loggedUser.isBlocked()){
+            throw new UnauthorizedOperationException("You are blocked!");
+        }
+
+        if(userToBlock.isBlocked()){
+            throw new UnauthorizedOperationException("This user is already blocked!");
+        }
+
+        userToBlock.setBlocked(true);
+        userRepository.save(userToBlock);
+    }
+
+    @Override
+    public void unblockUser(String loggedUsername, int id){
+
+        User loggedUser = userRepository.findByUsernameAndIsActiveTrue(loggedUsername)
+                .orElseThrow(() -> new EntityNotFoundException("User", "username", loggedUsername));
+
+
+        User userToUnblock = userRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("User", id));
+
+
+        if(!loggedUser.getRole().equals(Role.ADMIN) && !loggedUser.getRole().equals(Role.MODERATOR)){
+            throw new UnauthorizedOperationException("You have not permission to unblock users!");
+        }
+
+
+        if (loggedUser.getRole().equals(Role.MODERATOR) && userToUnblock.getRole().equals(Role.MODERATOR)){
+            throw new UnauthorizedOperationException("Moderator can not unblock other moderators!");
+        }
+
+        if(loggedUser.isBlocked()){
+            throw new UnauthorizedOperationException("You are blocked!");
+        }
+
+        if(!userToUnblock.isBlocked()){
+            throw new UnauthorizedOperationException("This user is not blocked!");
+        }
+
+        userToUnblock.setBlocked(false);
+        userRepository.save(userToUnblock);
     }
 }

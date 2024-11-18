@@ -33,4 +33,8 @@ public interface UserService {
     void userToBeModerator(String loggedUserUsername, int userToModeratorId);
 
     void moderatorToBeUser(String loggedUserUsername, int moderatorToUserId);
+
+    void blockUser(String loggedUsername, int id);
+
+    void unblockUser(String loggedUsername, int id);
 }

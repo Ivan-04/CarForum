@@ -69,4 +69,18 @@ public class UserRestController {
         userService.moderatorToBeUser(loggedUserUsername, userId);
         return new ResponseEntity<>("Congratulations! This moderator is already a user!", HttpStatus.OK);
     }
+
+    @PutMapping("/{id}/block")
+    public ResponseEntity<String> blockUser(@PathVariable int id) {
+            String loggedUserUsername = jwtService.getCurrentUsername();
+            userService.blockUser(loggedUserUsername, id);
+            return new ResponseEntity<>("This user was blocked successfully!", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/unblock")
+    public ResponseEntity<String> unblockUser(@PathVariable int id) {
+        String loggedUserUsername = jwtService.getCurrentUsername();
+        userService.unblockUser(loggedUserUsername, id);
+        return new ResponseEntity<>("This user was unblocked successfully!", HttpStatus.OK);
+    }
 }
