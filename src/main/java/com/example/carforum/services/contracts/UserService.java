@@ -1,4 +1,4 @@
-package com.example.carforum.services;
+package com.example.carforum.services.contracts;
 
 import com.example.carforum.controllers.authentication.AuthenticationRequest;
 import com.example.carforum.controllers.authentication.AuthenticationResponse;

@@ -1,6 +1,6 @@
 package com.example.carforum.controllers.authentication;
 
-import com.example.carforum.services.UserService;
+import com.example.carforum.services.contracts.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

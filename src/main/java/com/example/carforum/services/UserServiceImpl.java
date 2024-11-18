@@ -11,6 +11,7 @@ import com.example.carforum.models.User;
 import com.example.carforum.models.dtos.UserOutput;
 import com.example.carforum.models.dtos.UserUpdate;
 import com.example.carforum.repositories.UserRepository;
+import com.example.carforum.services.contracts.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -154,7 +155,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User", "username", currentUsername));
 
         if(!jwtService.isUserAllowedToEdit(currentUsername, user.getUsername()) && !currUser.getRole().equals(Role.ADMIN)){
-            throw new UnauthorizedOperationException("You can not delete other user if you are not admin!");
+            throw new UnauthorizedOperationException("You can not delete other user if you are not an admin!");
         }
 
         user.setIsActive(false);

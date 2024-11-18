@@ -1,9 +1,11 @@
 package com.example.carforum.controllers;
 
 import com.example.carforum.config.JwtService;
+import com.example.carforum.models.dtos.AdminPhoneDto;
 import com.example.carforum.models.dtos.UserOutput;
 import com.example.carforum.models.dtos.UserUpdate;
-import com.example.carforum.services.UserService;
+import com.example.carforum.services.contracts.AdminPhoneService;
+import com.example.carforum.services.contracts.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class UserRestController {
 
     private final UserService userService;
+    private final AdminPhoneService adminPhoneService;
     private final JwtService jwtService;
 
     @GetMapping
@@ -82,5 +84,20 @@ public class UserRestController {
         String loggedUserUsername = jwtService.getCurrentUsername();
         userService.unblockUser(loggedUserUsername, id);
         return new ResponseEntity<>("This user was unblocked successfully!", HttpStatus.OK);
+    }
+
+    @PostMapping("/phone")
+    public ResponseEntity<String> addPhoneNumber(@Valid @RequestBody AdminPhoneDto phoneNumberDto) {
+        String loggedUserUsername = jwtService.getCurrentUsername();
+        adminPhoneService.addPhoneNumber(phoneNumberDto, loggedUserUsername);
+        return new ResponseEntity<>("Phone number added successfully.", HttpStatus.OK);
+    }
+
+
+    @DeleteMapping("/phone")
+    public ResponseEntity<String> removePhoneNumber(@Valid @RequestBody AdminPhoneDto phoneNumberDto) {
+            String loggedUserUsername = jwtService.getCurrentUsername();
+            adminPhoneService.removePhoneFromAdmin(phoneNumberDto, loggedUserUsername);
+            return new ResponseEntity<>("Phone number added successfully.", HttpStatus.OK);
     }
 }
